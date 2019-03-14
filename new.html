@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>循环数据</title>
+</head>
+<body>
+
+<table id="cs">
+    <thead id="csTh">
+
+    </thead>
+
+    <tbody id="csTbody">
+
+    </tbody>
+
+</table>
+
+<table id="one"></table>
+<table id="two"></table>
+<script src="js/jquery.min.js"></script>
+
+<script>
+
+
+
+
+
+    //https://www.easy-mock.com/mock/5b3c364310a1f82172313f40/example_copy_copy/review
+    console.log(Number(Math.random().toString().substr(3, 6) + Date.now()).toString(36));
+
+    $.ajax({
+        url: "https://www.easy-mock.com/mock/5b3c364310a1f82172313f40/example_copy_copy/review",
+        type: "post",
+        success: function (data) {
+            var result = data.data;
+            console.log(result);
+            if (data.code == 200) {
+                var tr='';
+                $.each(result.指数,function(i,v){
+                    tr+='<tr>';
+                    tr+='<td>'+result.指数[i]+'<td>'
+                    $.each(result.指标解释,function(j,v){
+                        tr+='<td>'+v[i]+'</td>'
+                    })
+
+                    tr+='</tr>'
+                })
+                $("#one").append(tr);
+
+            } else {
+
+            }
+
+        },
+        error: function () {
+        }
+    });
+
+
+    $.ajax({
+        url: "https://www.easy-mock.com/mock/5b3c364310a1f82172313f40/example_copy_copy/holdclassify",
+        type: "get",
+        success: function (data) {
+                var obj = data;
+            console.log(obj);
+            if (obj.code == 200) {
+                var dateArr = [];
+                for(var i = 0;i<obj.data.length;i++){
+                    dateArr.push(obj.data[i].enddate);
+                }
+                var newdateArr = [...new Set(dateArr)];
+                var th='<td>--</td>'
+                for(var i = 0;i<newdateArr.length;i++){
+                    th+='<td>'+newdateArr[i]+'</td>'
+                }
+                $("#csTh").html(th);
+                var firstName=obj.data[0].holdclass;
+                var td='<td>'+obj.data[0].holdclass+'</td>';
+                for(var i = 0;i<obj.data.length;i++){
+                   if  (firstName==obj.data[i].holdclass){
+                       td+='<td>'+obj.data[i].sum+'</td>';
+                       if(i==obj.data.length-1){
+                           $("#csTbody").append('<tr>'+td+'</tr>');
+                       }
+                   }
+                   else {
+//                       // td 放表格
+                       $("#csTbody").append('<tr>'+td+'</tr>');
+                       td='<td>'+obj.data[i].holdclass+'</td>';
+                       firstName=obj.data[i].holdclass;
+                       td+='<td>'+obj.data[i].sum+'</td>';
+                   }
+                }
+            } else {
+                   // errorSnackbar("修改失败");
+                }
+
+        },
+        error: function () {
+        }
+    });
+
+
+//    $.ajax({
+//        url: "https://www.easy-mock.com/mock/5b3c364310a1f82172313f40/example_copy_copy/holdclassify",
+//        type: "get",
+//        success: function (data) {
+//            var obj = data;
+//            var dateArr = [];
+//            var nameArr = [];
+//            for(var i = 0;i<obj.data.length;i++){
+//                dateArr.push(obj.data[i].enddate);
+//            }
+//            for(var i = 0;i<obj.data.length;i++){
+//                nameArr.push(obj.data[i].holdclass);
+//            }
+//            var newdateArr = [...new Set(dateArr)];
+//            var newnameArr = [...new Set(nameArr)];
+//            console.log(newdateArr);
+//            console.log(newnameArr);
+//            var sumArr = [];
+//            for(var x = 0;x<newdateArr.length;x++){
+//                for(var y =0;y<newnameArr.length;y++){
+//                    for(var z= 0; z<obj.data.length;z++){
+//                        if(newdateArr[x]==obj.data[z].enddate&&newnameArr[y]==obj.data[z].holdclass){
+//
+//                            sumArr.push(obj.data[z].sum);
+//                        }
+//                    }
+//
+//                }
+//
+//            }
+//            console.log(sumArr);
+//            var result = [];
+//            for(var i=0,len=sumArr.length;i<len;i+=6){
+//                result.push(sumArr.slice(i,i+6));
+//
+//            }
+//            console.log(result)
+//        },
+//        error: function () {
+//        }
+//    });
+
+
+</script>
+
+</body>
+</html>
