@@ -288,20 +288,28 @@ WeChat.prototype ={
         console.log('进入');
         var that = this;
         this.socket = io.connect('http://192.168.1.16:8623');
+        //初始化链接,起名字
         this.socket.on('connect',function(){
             $("#nickWrapper").css("display","block");
             $("#info").html("起个名字把");
             $("#nicknameInput").focus();
         });
+        //姓名重复提醒
         this.socket.on('nickExisted',function(){
             $("#info").html("名字重复,换一个试试")
         });
+        /***
+         * 后台反馈登录成功
+         * 前端提示成功
+         * 聚焦input聊天
+         */
         this.socket.on('loginSuccess',function(){
             $(document).attr("title","微聊"+$("#nicknameInput").val());
             $("#loginWrapper").css("display","none");
             snackbar('登录成功')
             $("#input_box").focus();
         });
+        //连接失败
         this.socket.on('error',function(){
            if($("#loginWrapper").is("display")=='none'){
                 $("#info").html("连接失败!!!");
@@ -309,13 +317,20 @@ WeChat.prototype ={
 
            }
         });
+        /**
+         * 系统消息通知
+         *
+         */
         this.socket.on('system', function(userInfo, userCount, status) {
-            var msg = userInfo.u_name + (status == 'login' ? ' 在线' : ' 离线');
+            var msg = '用户'+userInfo.u_name + (status == 'login' ? ' 在线' : ' 离线');
             that._displayNewMsg('系统 ',userInfo, msg,1);//全局发送消息
             snackbar(msg);
             $("#status").html(userCount + (userCount > 1 ? ' 个用户' : ' 个人') + '在线');
             $("#chatNum").html(userCount);
         });
+        /***
+         * 用户离线
+         */
         this.socket.on('systemExit', function(userName, userId,userCount, status) {
             console.log("用户"+userName+'离开');
             var msg = userName + (status == 'login' ? ' 在线' : ' 离线');
@@ -329,7 +344,27 @@ WeChat.prototype ={
             $("#status").html(userCount + (userCount > 1 ? ' 个用户' : ' 个人') + '在线');
             $("#chatNum").html(userCount);
         });
+        /***
+         * 用户登录
+         * name自定义
+         * gu_id创建
+         * headImg随机
+         */
         $("#loginBtn").click(function(){
+            personInfo();
+        });
+        /*
+        * 按下enter确认登录
+        * 分配guid
+        * 分配任意头像
+        * */
+        $("#nicknameInput").keyup(function(e){
+            if(e.keyCode == 13){
+                personInfo();
+            }
+
+        });
+        function personInfo(){
             var nickName = $("#nicknameInput").val();
             var nickId = Number(Math.random().toString().substr(3, 6) + Date.now()).toString(36);
             var nickImg = RandomNumBoth(3,16);
@@ -343,25 +378,10 @@ WeChat.prototype ={
             }else{
                 $("#nicknameInput").focus();
             }
-        });
-        $("#nicknameInput").keyup(function(e){
-            if(e.keyCode == 13){
-                var nickName = $("#nicknameInput").val();
-                var nickId = Number(Math.random().toString().substr(3, 6) + Date.now()).toString(36);
-                var nickImg = RandomNumBoth(3,16);
-                userInfo = {
-                    'u_name':nickName,
-                    'u_id':nickId,
-                    'u_img':nickImg
-                }
-                if($.trim(nickName).length!=0){
-                    that.socket.emit("login",userInfo);
-                }else{
-                    $("#nicknameInput").focus();
-                }
-            }
-
-        });
+        };
+        /**
+         * 点击发送消息
+         */
         $("#send").click(function(){
             var activeId = $(".privateLi").attr("data-id");
             var activeName = $(".privateLi").find(".user_name").html();
@@ -378,8 +398,8 @@ WeChat.prototype ={
                     that._displayNewMsg('我',activeImg,msg,3);
                 }
             }
-
         });
+        //
         this.socket.on('newMsg',function(nickName,msg,type){
             console.log(nickName)
             that._displayNewMsg('后台',nickName,msg,type)
@@ -388,19 +408,37 @@ WeChat.prototype ={
             console.log('点击')
             $("#user_list>li").removeClass('user_active');
             $(this).addClass('user_active');
-            if($(this).hasClass('chatGroup')){//讨论组聊天室
+            //讨论组聊天室
+            if($(this).hasClass('chatGroup')){
 
             }
-            if($(this).hasClass('privateLi')){//个人对个人
+            //个人对个人
+            if($(this).hasClass('privateLi')){
                 var userId = $(this).attr("data-id");
                 that.socket.emit("PrivateMsg",userId);
             }
         });
+        /**
+         * 发送私信
+         */
         this.socket.on('newPrivateMsg',function(nickName,img,msg,type){
             console.log('私信');
             that._displayNewMsg('私信',nickName,msg,type)
         });
+        //新消息
+        this.socket.on('newMsg',function(nickName,msg,type){
+            console.log(nickName)
+            that._displayNewMsg('后台',nickName,msg,type)
+        });
     },
+    /**
+     * 发送消息列表
+     * @param user
+     * @param userInfo
+     * @param msg
+     * @param type
+     * @private
+     */
     _displayNewMsg: function(user,userInfo, msg,type) {
         switch(type){
             case 1://聊天人列表
@@ -434,13 +472,7 @@ WeChat.prototype ={
         }
 
     }
-
-
 };
-
-
-
-
 /*
  * 聊天部分结束
  * */
@@ -460,12 +492,6 @@ function RandomNumBoth(Min,Max){
     var num = Min + Math.round(Rand * Range); //四舍五入
     return num;
 }
-
-
-
-
-
-
 
 
 

@@ -13,7 +13,9 @@ server.listen(process.env.PORT || 8623,function(){
 //emit发送,on接受
 //handle the socket
 io.sockets.on('connection', function(socket) {
-    //new user login
+    /**
+     * 新用户登录
+     */
     socket.on('login', function(userInfo) {
         //判断当前对象是否已经注册
         if(ary_ContinsValue(userList, userInfo.u_name)){
@@ -30,7 +32,9 @@ io.sockets.on('connection', function(socket) {
         }
 
     });
-    //user leaves
+    /***
+     * 用户离线
+     */
     socket.on('disconnect', function() {
         if (socket.nickname != null&&socket.socketId!=null) {
             console.log('断掉链接' + socket.nickname);
@@ -38,11 +42,15 @@ io.sockets.on('connection', function(socket) {
             socket.broadcast.emit('systemExit', socket.nickname,socket.socketId, userList.length, 'logout');
         }
     });
-    //new message get
+    /***
+     * 发送消息
+     */
     socket.on('postMsg', function(userId,nickname,nickImg,msg,type) {
         socket.emit('newMsg', socket.nickname,nickImg, msg,type);
     });
-    //new message private
+    /***
+     * 新的私人消息
+     */
     socket.on('PrivateMsg', function(userId,type) {
         console.log(type);
         var toSocket = _.findWhere(userList,{u_id:userId});
